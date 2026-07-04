@@ -19,16 +19,12 @@ func WorkerCpu(ch chan CpuMetric) {
 	ticker := time.NewTicker(1 * time.Second)
 	defer ticker.Stop()
 
-	for {
-		select {
-		case <-ticker.C:
-			cpuMetric, err := GetCpuInfo()
-			if err != nil {
-				// Handle error (e.g., log it)
-				continue
-			}
-			ch <- cpuMetric
+	for range ticker.C {
+		cpuMetric, err := GetCpuInfo()
+		if err != nil {
+			continue
 		}
+		ch <- cpuMetric
 	}
 }
 

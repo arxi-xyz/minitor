@@ -56,14 +56,11 @@ func WorkerRam(ch chan RamMetric) {
 	ticker := time.NewTicker(1 * time.Second)
 	defer ticker.Stop()
 
-	for {
-		select {
-		case <-ticker.C:
-			ramVal, err := GetRamInfo()
-			if err != nil {
-				continue
-			}
-			ch <- ramVal
+	for range ticker.C {
+		ramVal, err := GetRamInfo()
+		if err != nil {
+			continue
 		}
+		ch <- ramVal
 	}
 }
