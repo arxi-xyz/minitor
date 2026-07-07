@@ -3,11 +3,12 @@ package terminal
 import (
 	"fmt"
 	"minitor/collector"
+	"minitor/helper"
 
 	"github.com/charmbracelet/lipgloss"
 )
 
-const boxWidth = 40
+const boxWidth = 30
 const boxHeight = 22
 
 func (m Model) View() string {
@@ -18,6 +19,8 @@ func (m Model) View() string {
 		diskBoxView(m.DiskMetric),
 		"  ", // spacing
 		ramBoxView(m.RamMetric),
+		"  ",
+		networkBoxView(m.NetworkMetric),
 	)
 
 	header := lipgloss.NewStyle().
@@ -82,18 +85,18 @@ Mount : %s
 Type  : %s
 			
 Used  : %.1f%%
-Total : %d GB
-Free  : %d GB
+Total : %.2f GB
+Free  : %.2f GB
 
-Read  : %d MB
-Write : %d MB`,
+Read  : %.2f MB
+Write : %.2f MB`,
 			diskMetric.MountPoint,
 			diskMetric.FSType,
 			diskMetric.UsedPercent,
-			diskMetric.Total/1024/1024/1024,
-			diskMetric.Free/1024/1024/1024,
-			diskMetric.ReadBytes/1024/1024,
-			diskMetric.WriteBytes/1024/1024,
+			helper.Convert(helper.Byte, helper.GigaByte, float64(diskMetric.Total)),
+			helper.Convert(helper.Byte, helper.GigaByte, float64(diskMetric.Free)),
+			helper.Convert(helper.Byte, helper.MegaByte, float64(diskMetric.ReadBytes)),
+			helper.Convert(helper.Byte, helper.MegaByte, float64(diskMetric.WriteBytes)),
 		))
 }
 
@@ -109,27 +112,71 @@ func ramBoxView(ramMetric collector.RamMetric) string {
 -------------------
 Usage      : %.1f%%
 
-Total      : %d GB
-Used       : %d GB
-Available  : %d GB
-Free       : %d GB
+Total      : %.2f GB
+Used       : %.2f GB
+Available  : %.2f GB
+Free       : %.2f GB
 
-Cached     : %d MB
-Buffers    : %d MB
+Cached     : %.2f MB
+Buffers    : %.2f MB
 
-Active     : %d MB
-Inactive   : %d MB`,
+Active     : %.2f MB
+Inactive   : %.2f MB`,
 			ramMetric.UsedPercent,
 
-			ramMetric.Total/1024/1024/1024,
-			ramMetric.Used/1024/1024/1024,
-			ramMetric.Available/1024/1024/1024,
-			ramMetric.Free/1024/1024/1024,
+			helper.Convert(helper.Byte, helper.GigaByte, float64(ramMetric.Total)),
+			helper.Convert(helper.Byte, helper.GigaByte, float64(ramMetric.Used)),
+			helper.Convert(helper.Byte, helper.GigaByte, float64(ramMetric.Available)),
+			helper.Convert(helper.Byte, helper.GigaByte, float64(ramMetric.Free)),
 
-			ramMetric.Cached/1024/1024,
-			ramMetric.Buffers/1024/1024,
+			helper.Convert(helper.Byte, helper.MegaByte, float64(ramMetric.Cached)),
+			helper.Convert(helper.Byte, helper.MegaByte, float64(ramMetric.Buffers)),
 
-			ramMetric.Active/1024/1024,
-			ramMetric.Inactive/1024/1024,
+			helper.Convert(helper.Byte, helper.MegaByte, float64(ramMetric.Active)),
+			helper.Convert(helper.Byte, helper.MegaByte, float64(ramMetric.Inactive)),
+		))
+}
+
+func networkBoxView(networkMetric collector.NetworkMetric) string {
+	return lipgloss.NewStyle().
+		Border(lipgloss.RoundedBorder()).
+		BorderForeground(lipgloss.Color("#E2B714")).
+		Padding(1).
+		Width(boxWidth).
+		Height(boxHeight).
+		Render(fmt.Sprintf(
+			`NETWORK
+-------------------
+Interface : %s
+IP        : %s
+
+RX Total : %.2f GB
+TX Total : %.2f GB
+
+Packets RX : %d
+Packets TX : %d
+
+Errors : %d
+Drops  : %d`,
+			networkMetric.InterfaceName,
+			networkMetric.IP,
+
+			helper.Convert(
+				helper.Byte,
+				helper.GigaByte,
+				float64(networkMetric.RxBytes),
+			),
+
+			helper.Convert(
+				helper.Byte,
+				helper.GigaByte,
+				float64(networkMetric.TxBytes),
+			),
+
+			networkMetric.PacketsRx,
+			networkMetric.PacketsTx,
+
+			networkMetric.Errors,
+			networkMetric.Drops,
 		))
 }

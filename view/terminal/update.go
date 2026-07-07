@@ -24,6 +24,10 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case collector.DiskMetric:
 		m.DiskMetric = msg
 		return m, waitForDiskMetric(m.diskChannel)
+
+	case collector.NetworkMetric:
+		m.NetworkMetric = msg
+		return m, waitForNetworkMetric(m.networkChannel)
 	}
 	return m, nil
 }
