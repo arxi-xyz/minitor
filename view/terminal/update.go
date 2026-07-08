@@ -8,10 +8,36 @@ import (
 
 func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
+	case tea.WindowSizeMsg:
+		m.width = msg.Width
+		m.height = msg.Height
+		m.processOffset = clampProcessOffset(m.processOffset, m.ProcessMetric, m.processVisibleLines())
+		return m, nil
+
 	case tea.KeyMsg:
 		switch msg.String() {
 		case "q", "esc", "ctrl+c":
 			return m, tea.Quit
+		case "up", "k":
+			if m.processOffset > 0 {
+				m.processOffset--
+			}
+		case "down", "j":
+			maxOffset := maxProcessOffset(m.ProcessMetric, m.processVisibleLines())
+			if m.processOffset < maxOffset {
+				m.processOffset++
+			}
+		case "pgup":
+			m.processOffset -= 10
+			if m.processOffset < 0 {
+				m.processOffset = 0
+			}
+		case "pgdown":
+			m.processOffset += 10
+			maxOffset := maxProcessOffset(m.ProcessMetric, m.processVisibleLines())
+			if m.processOffset > maxOffset {
+				m.processOffset = maxOffset
+			}
 		}
 
 	case collector.RamMetric:
@@ -30,7 +56,8 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m, waitForNetworkMetric(m.networkChannel)
 	case []*collector.ProcessMetric:
 		m.ProcessMetric = msg
-		return m, waitForNetworkMetric(m.networkChannel)
+		m.processOffset = clampProcessOffset(m.processOffset, m.ProcessMetric, m.processVisibleLines())
+		return m, waitForProcessMetric(m.processChannel)
 	}
 	return m, nil
 }

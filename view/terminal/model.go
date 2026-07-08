@@ -13,6 +13,10 @@ type Model struct {
 	NetworkMetric collector.NetworkMetric
 	ProcessMetric []*collector.ProcessMetric
 
+	width         int
+	height        int
+	processOffset int
+
 	cpuChannel     chan collector.CpuMetric
 	ramChannel     chan collector.RamMetric
 	diskChannel    chan collector.DiskMetric
@@ -41,6 +45,7 @@ func (m Model) Init() tea.Cmd {
 	go collector.WorkerRam(m.ramChannel)
 	go collector.WorkerDisk(m.diskChannel)
 	go collector.WorkerNetwork(m.networkChannel)
+	go collector.ProcessWorker(m.processChannel)
 
 	return tea.Batch(
 		waitForCpuMetric(m.cpuChannel),
