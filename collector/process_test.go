@@ -63,16 +63,4 @@ func TestGetProccess(t *testing.T) {
 
 		procMap[int(p.Pid)] = &Process
 	}
-
-	var roots []*ProcessMetric
-
-	for _, proc := range procMap {
-		parent, ok := procMap[int(proc.PPID)]
-
-		if ok {
-			parent.Childs[int(proc.PID)] = proc
-		} else {
-			roots = append(roots, proc)
-		}
-	}
 }

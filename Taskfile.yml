@@ -12,3 +12,6 @@ tasks:
   lint:
     cmds:
       - golangci-lint run
+  test:
+    cmds:
+      - go test ./...
