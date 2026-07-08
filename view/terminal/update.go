@@ -28,6 +28,9 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case collector.NetworkMetric:
 		m.NetworkMetric = msg
 		return m, waitForNetworkMetric(m.networkChannel)
+	case []*collector.ProcessMetric:
+		m.ProcessMetric = msg
+		return m, waitForNetworkMetric(m.networkChannel)
 	}
 	return m, nil
 }
