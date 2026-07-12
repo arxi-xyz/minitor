@@ -36,7 +36,9 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	defer func() {
 		close(client.Send)
-		conn.Close(websocket.StatusNormalClosure, "")
+		if err := conn.Close(websocket.StatusNormalClosure, ""); err != nil {
+			log.Fatal(err)
+		}
 	}()
 
 	ctx := r.Context()
