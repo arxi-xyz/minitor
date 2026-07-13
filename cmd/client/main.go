@@ -5,16 +5,27 @@ import (
 	"fmt"
 	"os"
 
+	"minitor/config"
 	"minitor/view/terminal"
 
 	tea "github.com/charmbracelet/bubbletea"
 )
 
 func main() {
-	url := flag.String("url", "ws://127.0.0.1:8080/ws", "websocket server url")
+	configPath := flag.String("config", "", "path to JSON config file")
+	url := flag.String("url", "", "websocket server url")
 	flag.Parse()
 
-	p := tea.NewProgram(terminal.InitialModelWithURL(*url), tea.WithAltScreen())
+	cfg, err := config.Load(config.LoadOptions{
+		Path:  *configPath,
+		WSURL: *url,
+	})
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "config error: %v\n", err)
+		os.Exit(1)
+	}
+
+	p := tea.NewProgram(terminal.NewModel(cfg), tea.WithAltScreen())
 	if _, err := p.Run(); err != nil {
 		fmt.Fprintf(os.Stderr, "error: %v\n", err)
 		os.Exit(1)

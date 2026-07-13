@@ -7,13 +7,22 @@ import (
 	"minitor/collector"
 )
 
-const (
-	defaultProcessLimit = 50
-	maxProcessLimit     = 200
-)
+type Settings struct {
+	DefaultProcessLimit int
+	MaxProcessLimit     int
+}
 
-func MaxProcessLimit() int {
-	return maxProcessLimit
+func (s Settings) withDefaults() Settings {
+	if s.DefaultProcessLimit <= 0 {
+		s.DefaultProcessLimit = 50
+	}
+	if s.MaxProcessLimit <= 0 {
+		s.MaxProcessLimit = 200
+	}
+	if s.MaxProcessLimit < s.DefaultProcessLimit {
+		s.MaxProcessLimit = s.DefaultProcessLimit
+	}
+	return s
 }
 
 type ProcessRow struct {

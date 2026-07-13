@@ -1,0 +1,14 @@
+{
+  "server": {
+    "addr": ":8080",
+    "shutdown_timeout": "10s"
+  },
+  "client": {
+    "ws_url": "ws://127.0.0.1:8080/ws",
+    "reconnect_delay": "3s"
+  },
+  "socket": {
+    "default_process_limit": 50,
+    "max_process_limit": 200
+  }
+}

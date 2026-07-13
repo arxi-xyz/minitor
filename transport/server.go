@@ -3,6 +3,7 @@ package transport
 import (
 	"context"
 
+	"minitor/config"
 	"minitor/transport/http"
 )
 
@@ -10,9 +11,9 @@ type Server struct {
 	Http *http.Http
 }
 
-func NewServer() *Server {
+func NewServer(cfg config.Config) *Server {
 	return &Server{
-		Http: http.NewHttp(),
+		Http: http.NewHttp(cfg),
 	}
 }
 

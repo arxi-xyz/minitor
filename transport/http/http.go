@@ -5,25 +5,26 @@ import (
 	"encoding/json"
 	"errors"
 	"log"
+	"minitor/config"
 	"minitor/transport/socket"
 	"net/http"
-	"time"
 )
 
-const shutdownTimeout = 10 * time.Second
-
 type Http struct {
-	addr string
+	cfg config.Config
 }
 
-func NewHttp() *Http {
-	return &Http{addr: ":8080"}
+func NewHttp(cfg config.Config) *Http {
+	return &Http{cfg: cfg}
 }
 
 func (s *Http) Run(ctx context.Context) error {
 	mux := http.NewServeMux()
 	hub := socket.NewHub()
-	monitor := socket.NewMonitor(hub)
+	monitor := socket.NewMonitor(hub, socket.Settings{
+		DefaultProcessLimit: s.cfg.Socket.DefaultProcessLimit,
+		MaxProcessLimit:     s.cfg.Socket.MaxProcessLimit,
+	})
 
 	go monitor.Run(ctx)
 
@@ -31,13 +32,18 @@ func (s *Http) Run(ctx context.Context) error {
 	mux.Handle("/ws", socket.NewHandler(hub, monitor))
 
 	srv := &http.Server{
-		Addr:    s.addr,
+		Addr:    s.cfg.Server.Addr,
 		Handler: mux,
+	}
+
+	shutdownTimeout, err := s.cfg.Server.ShutdownTimeoutDuration()
+	if err != nil {
+		return err
 	}
 
 	errCh := make(chan error, 1)
 	go func() {
-		log.Printf("listening on %s", s.addr)
+		log.Printf("listening on %s", s.cfg.Server.Addr)
 		err := srv.ListenAndServe()
 		if err != nil && !errors.Is(err, http.ErrServerClosed) {
 			errCh <- err

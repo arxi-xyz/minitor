@@ -1,12 +1,13 @@
 package terminal
 
 import (
+	"time"
+
 	"minitor/collector"
+	"minitor/config"
 
 	tea "github.com/charmbracelet/bubbletea"
 )
-
-const defaultWSURL = "ws://127.0.0.1:8080/ws"
 
 type Model struct {
 	CpuMetric     collector.CpuMetric
@@ -19,24 +20,33 @@ type Model struct {
 	height        int
 	processOffset int
 
-	wsURL string
-	wsCh  chan tea.Msg
+	wsURL             string
+	wsReconnectDelay  time.Duration
+	maxProcessLimit   int
+	wsCh              chan tea.Msg
 }
 
 func InitialModel() Model {
-	return InitialModelWithURL(defaultWSURL)
+	return NewModel(config.Default())
 }
 
-func InitialModelWithURL(url string) Model {
+func NewModel(cfg config.Config) Model {
+	reconnectDelay, err := cfg.Client.ReconnectDelayDuration()
+	if err != nil {
+		reconnectDelay = 3 * time.Second
+	}
+
 	return Model{
-		wsURL: url,
-		wsCh:  make(chan tea.Msg, 64),
+		wsURL:            cfg.Client.WSURL,
+		wsReconnectDelay: reconnectDelay,
+		maxProcessLimit:  cfg.Socket.MaxProcessLimit,
+		wsCh:             make(chan tea.Msg, 64),
 	}
 }
 
 func (m Model) Init() tea.Cmd {
 	return tea.Batch(
-		listenWS(m.wsURL, m.wsCh),
+		listenWS(m.wsURL, m.wsReconnectDelay, m.maxProcessLimit, m.wsCh),
 		waitForWS(m.wsCh),
 	)
 }

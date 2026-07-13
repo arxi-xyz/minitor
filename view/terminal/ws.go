@@ -24,9 +24,9 @@ type processesMsg struct {
 	Processes []*collector.ProcessMetric
 }
 
-func listenWS(url string, events chan tea.Msg) tea.Cmd {
+func listenWS(url string, reconnectDelay time.Duration, maxProcessLimit int, events chan tea.Msg) tea.Cmd {
 	return func() tea.Msg {
-		go runWS(url, events)
+		go runWS(url, reconnectDelay, maxProcessLimit, events)
 		return nil
 	}
 }
@@ -37,14 +37,14 @@ func waitForWS(events chan tea.Msg) tea.Cmd {
 	}
 }
 
-func runWS(url string, events chan tea.Msg) {
+func runWS(url string, reconnectDelay time.Duration, maxProcessLimit int, events chan tea.Msg) {
 	for {
-		_ = runSession(url, events)
-		time.Sleep(3 * time.Second)
+		_ = runSession(url, maxProcessLimit, events)
+		time.Sleep(reconnectDelay)
 	}
 }
 
-func runSession(url string, events chan tea.Msg) error {
+func runSession(url string, maxProcessLimit int, events chan tea.Msg) error {
 	ctx := context.Background()
 
 	conn, _, err := websocket.Dial(ctx, url, nil)
@@ -82,7 +82,7 @@ func runSession(url string, events chan tea.Msg) error {
 			})
 
 			if snap.ProcessCount > 0 {
-				rows, err := fetchProcesses(ctx, conn, snap.ProcessCount)
+				rows, err := fetchProcesses(ctx, conn, snap.ProcessCount, maxProcessLimit)
 				if err != nil {
 					return err
 				}
@@ -95,13 +95,13 @@ func runSession(url string, events chan tea.Msg) error {
 	}
 }
 
-func fetchProcesses(ctx context.Context, conn *websocket.Conn, total int) ([]socket.ProcessRow, error) {
+func fetchProcesses(ctx context.Context, conn *websocket.Conn, total, pageLimit int) ([]socket.ProcessRow, error) {
 	rows := make([]socket.ProcessRow, 0, total)
 
-	for offset := 0; offset < total; offset += socket.MaxProcessLimit() {
+	for offset := 0; offset < total; offset += pageLimit {
 		reqData, err := json.Marshal(socket.ProcessesRequest{
 			Offset: offset,
-			Limit:  socket.MaxProcessLimit(),
+			Limit:  pageLimit,
 		})
 		if err != nil {
 			return nil, err

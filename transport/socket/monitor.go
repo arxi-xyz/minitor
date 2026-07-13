@@ -9,15 +9,19 @@ import (
 )
 
 type Monitor struct {
-	hub  *Hub
-	snap Snapshot
+	hub      *Hub
+	settings Settings
+	snap     Snapshot
 
 	processMu sync.RWMutex
 	flat      []ProcessRow
 }
 
-func NewMonitor(hub *Hub) *Monitor {
-	return &Monitor{hub: hub}
+func NewMonitor(hub *Hub, settings Settings) *Monitor {
+	return &Monitor{
+		hub:      hub,
+		settings: settings.withDefaults(),
+	}
 }
 
 func (m *Monitor) Run(ctx context.Context) {
@@ -71,10 +75,10 @@ func (m *Monitor) ProcessesPage(offset, limit int) ProcessesPage {
 
 	total := len(m.flat)
 	if limit <= 0 {
-		limit = defaultProcessLimit
+		limit = m.settings.DefaultProcessLimit
 	}
-	if limit > maxProcessLimit {
-		limit = maxProcessLimit
+	if limit > m.settings.MaxProcessLimit {
+		limit = m.settings.MaxProcessLimit
 	}
 	if offset < 0 {
 		offset = 0
