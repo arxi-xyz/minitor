@@ -1,6 +1,7 @@
 package socket
 
 import (
+	"context"
 	"log"
 	"sync"
 
@@ -19,7 +20,7 @@ func NewMonitor(hub *Hub) *Monitor {
 	return &Monitor{hub: hub}
 }
 
-func (m *Monitor) Run() {
+func (m *Monitor) Run(ctx context.Context) {
 	cpuCh := make(chan collector.CpuMetric)
 	ramCh := make(chan collector.RamMetric)
 	diskCh := make(chan collector.DiskMetric)
@@ -34,6 +35,8 @@ func (m *Monitor) Run() {
 
 	for {
 		select {
+		case <-ctx.Done():
+			return
 		case v := <-cpuCh:
 			m.snap.CPU = v
 			m.broadcast()

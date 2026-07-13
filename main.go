@@ -1,12 +1,20 @@
 package main
 
-import "minitor/transport"
+import (
+	"context"
+	"log"
+	"os"
+	"os/signal"
+	"syscall"
+
+	"minitor/transport"
+)
 
 func main() {
-	// p := tea.NewProgram(view.InitialModel())
-	// if _, err := p.Run(); err != nil {
-	// 	fmt.Fprintf(os.Stderr, "Oof: %v\n", err)
-	// }
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	defer stop()
 
-	transport.NewServer().Run()
+	if err := transport.NewServer().Run(ctx); err != nil {
+		log.Fatal(err)
+	}
 }

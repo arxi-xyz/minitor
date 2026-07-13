@@ -1,6 +1,8 @@
 package transport
 
 import (
+	"context"
+
 	"minitor/transport/http"
 )
 
@@ -10,9 +12,10 @@ type Server struct {
 
 func NewServer() *Server {
 	return &Server{
-		Http: http.NewHttp()}
+		Http: http.NewHttp(),
+	}
 }
 
-func (s *Server) Run() {
-	s.Http.Run()
+func (s *Server) Run(ctx context.Context) error {
+	return s.Http.Run(ctx)
 }
