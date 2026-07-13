@@ -51,7 +51,7 @@ func runSession(url string, events chan tea.Msg) error {
 	if err != nil {
 		return err
 	}
-	defer conn.Close(websocket.StatusNormalClosure, "")
+	defer func() { _ = conn.Close(websocket.StatusNormalClosure, "") }()
 
 	conn.SetReadLimit(8 << 20)
 
