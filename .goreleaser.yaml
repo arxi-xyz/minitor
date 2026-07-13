@@ -1,0 +1,74 @@
+version: 2
+
+project_name: minitor
+
+before:
+  hooks:
+    - go mod tidy
+    - go test ./...
+
+builds:
+  - id: minitor
+    main: .
+    binary: minitor
+    goos:
+      - linux
+    goarch:
+      - amd64
+      - arm64
+    ldflags:
+      - -s -w
+      - -X minitor/version.Version={{.Version}}
+      - -X minitor/version.Commit={{.Commit}}
+      - -X minitor/version.Date={{.Date}}
+
+  - id: minitor-client
+    main: ./cmd/client
+    binary: minitor-client
+    goos:
+      - linux
+    goarch:
+      - amd64
+      - arm64
+    ldflags:
+      - -s -w
+      - -X minitor/version.Version={{.Version}}
+      - -X minitor/version.Commit={{.Commit}}
+      - -X minitor/version.Date={{.Date}}
+
+archives:
+  - ids:
+      - minitor
+      - minitor-client
+    formats:
+      - tar.gz
+    name_template: >-
+      {{ .ProjectName }}_
+      {{- .Version }}_
+      {{- .Os }}_
+      {{- .Arch }}
+    files:
+      - config.example.json
+      - README.md
+
+checksum:
+  name_template: checksums.txt
+
+changelog:
+  use: github
+  sort: asc
+  filters:
+    exclude:
+      - "^docs:"
+      - "^chore:"
+      - "^ci:"
+
+release:
+  footer: |
+    ## Quick start
+
+    ```bash
+    tar xzf minitor_*_linux_amd64.tar.gz
+    ./minitor &                  # server
+    ./minitor-client             # TUI client
+    ```

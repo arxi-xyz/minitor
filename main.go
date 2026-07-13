@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"flag"
+	"fmt"
 	"log"
 	"os"
 	"os/signal"
@@ -10,12 +11,19 @@ import (
 
 	"minitor/config"
 	"minitor/transport"
+	"minitor/version"
 )
 
 func main() {
 	configPath := flag.String("config", "", "path to JSON config file")
 	addr := flag.String("addr", "", "server listen address")
+	showVersion := flag.Bool("version", false, "print version and exit")
 	flag.Parse()
+
+	if *showVersion {
+		fmt.Println(version.String())
+		return
+	}
 
 	cfg, err := config.Load(config.LoadOptions{
 		Path:       *configPath,

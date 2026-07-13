@@ -15,3 +15,6 @@ tasks:
   test:
     cmds:
       - go test ./...
+  release-snapshot:
+    cmds:
+      - goreleaser release --snapshot --clean
