@@ -11,17 +11,17 @@ import (
 )
 
 type NetworkMetric struct {
-	InterfaceName string
-	IP            string
+	InterfaceName string `json:"interface_name"`
+	IP            string `json:"ip"`
 
-	RxBytes uint64
-	TxBytes uint64
+	RxBytes uint64 `json:"rx_bytes"`
+	TxBytes uint64 `json:"tx_bytes"`
 
-	PacketsRx uint64
-	PacketsTx uint64
+	PacketsRx uint64 `json:"packets_rx"`
+	PacketsTx uint64 `json:"packets_tx"`
 
-	Errors uint64
-	Drops  uint64
+	Errors uint64 `json:"errors"`
+	Drops  uint64 `json:"drops"`
 }
 
 func GetNetworkInfo() (NetworkMetric, error) {

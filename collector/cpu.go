@@ -29,11 +29,11 @@ func WorkerCpu(ch chan CpuMetric) {
 }
 
 type CpuMetric struct {
-	Usage         float64
-	CoreUsage     []float64
-	LogicalCores  int
-	PhysicalCores int
-	ModelName     string
+	Usage         float64   `json:"usage"`
+	CoreUsage     []float64 `json:"core_usage"`
+	LogicalCores  int       `json:"logical_cores"`
+	PhysicalCores int       `json:"physical_cores"`
+	ModelName     string    `json:"model_name"`
 }
 
 func NewCpuMetric() (CpuMetric, error) {

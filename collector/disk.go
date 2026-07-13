@@ -7,16 +7,16 @@ import (
 )
 
 type DiskMetric struct {
-	Total       uint64
-	Used        uint64
-	Free        uint64
-	UsedPercent float64
+	Total       uint64  `json:"total"`
+	Used        uint64  `json:"used"`
+	Free        uint64  `json:"free"`
+	UsedPercent float64 `json:"used_percent"`
 
-	ReadBytes  uint64
-	WriteBytes uint64
+	ReadBytes  uint64 `json:"read_bytes"`
+	WriteBytes uint64 `json:"write_bytes"`
 
-	MountPoint string
-	FSType     string
+	MountPoint string `json:"mount_point"`
+	FSType     string `json:"fs_type"`
 }
 
 func NewDiskMetric() DiskMetric {

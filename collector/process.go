@@ -7,14 +7,14 @@ import (
 )
 
 type ProcessMetric struct {
-	PID    int
-	PPID   int
-	Name   string
-	Mem    float64
-	Cpu    float64
-	Status string
-	User   string
-	Childs map[int]*ProcessMetric
+	PID    int                        `json:"pid"`
+	PPID   int                        `json:"ppid"`
+	Name   string                     `json:"name"`
+	Mem    float64                    `json:"mem"`
+	Cpu    float64                    `json:"cpu"`
+	Status string                     `json:"status"`
+	User   string                     `json:"user"`
+	Childs map[int]*ProcessMetric     `json:"children"`
 }
 
 func GetProccessInfo() ([]*ProcessMetric, error) {

@@ -17,6 +17,9 @@ func NewHttp() *Http {
 func (s *Http) Run() {
 	mux := http.NewServeMux()
 	hub := socket.NewHub()
+	monitor := socket.NewMonitor(hub)
+
+	go monitor.Run()
 
 	mux.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodGet {
@@ -34,7 +37,7 @@ func (s *Http) Run() {
 		}
 	})
 
-	mux.Handle("/ws", socket.NewHandler(hub))
+	mux.Handle("/ws", socket.NewHandler(hub, monitor))
 
 	log.Fatal(http.ListenAndServe(":8080", mux))
 }
