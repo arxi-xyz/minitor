@@ -142,6 +142,29 @@ task test
 
 CI runs on push/PR to `main`: lint, build, and test.
 
+## Releases
+
+Pre-built Linux binaries (`amd64` + `arm64`) are published on [GitHub Releases](https://github.com/YOUR_USER/minitor/releases).
+
+Each archive includes:
+- `minitor` — server
+- `minitor-client` — TUI client
+- `config.example.json`
+- `checksums.txt`
+
+```bash
+# create a release: tag and push
+git tag v0.1.0
+git push origin v0.1.0
+```
+
+Local snapshot (no publish):
+
+```bash
+task release-snapshot
+# output in dist/
+```
+
 ## Architecture
 
 Want the full picture? Check out [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).

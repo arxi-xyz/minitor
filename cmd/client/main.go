@@ -7,6 +7,7 @@ import (
 
 	"minitor/config"
 	"minitor/view/terminal"
+	"minitor/version"
 
 	tea "github.com/charmbracelet/bubbletea"
 )
@@ -14,7 +15,13 @@ import (
 func main() {
 	configPath := flag.String("config", "", "path to JSON config file")
 	url := flag.String("url", "", "websocket server url")
+	showVersion := flag.Bool("version", false, "print version and exit")
 	flag.Parse()
+
+	if *showVersion {
+		fmt.Println(version.String())
+		return
+	}
 
 	cfg, err := config.Load(config.LoadOptions{
 		Path:  *configPath,
