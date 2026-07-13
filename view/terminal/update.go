@@ -1,8 +1,6 @@
 package terminal
 
 import (
-	"minitor/collector"
-
 	tea "github.com/charmbracelet/bubbletea"
 )
 
@@ -12,7 +10,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.width = msg.Width
 		m.height = msg.Height
 		m.processOffset = clampProcessOffset(m.processOffset, m.ProcessMetric, m.processVisibleLines())
-		return m, nil
+		return m, waitForWS(m.wsCh)
 
 	case tea.KeyMsg:
 		switch msg.String() {
@@ -39,25 +37,20 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.processOffset = maxOffset
 			}
 		}
+		return m, waitForWS(m.wsCh)
 
-	case collector.RamMetric:
-		m.RamMetric = msg
-		return m, waitForRamMetric(m.ramChannel)
+	case snapshotMsg:
+		m.CpuMetric = msg.CPU
+		m.RamMetric = msg.RAM
+		m.DiskMetric = msg.Disk
+		m.NetworkMetric = msg.Network
+		return m, waitForWS(m.wsCh)
 
-	case collector.CpuMetric:
-		m.CpuMetric = msg
-		return m, waitForCpuMetric(m.cpuChannel)
-	case collector.DiskMetric:
-		m.DiskMetric = msg
-		return m, waitForDiskMetric(m.diskChannel)
-
-	case collector.NetworkMetric:
-		m.NetworkMetric = msg
-		return m, waitForNetworkMetric(m.networkChannel)
-	case []*collector.ProcessMetric:
-		m.ProcessMetric = msg
+	case processesMsg:
+		m.ProcessMetric = msg.Processes
 		m.processOffset = clampProcessOffset(m.processOffset, m.ProcessMetric, m.processVisibleLines())
-		return m, waitForProcessMetric(m.processChannel)
+		return m, waitForWS(m.wsCh)
 	}
-	return m, nil
+
+	return m, waitForWS(m.wsCh)
 }

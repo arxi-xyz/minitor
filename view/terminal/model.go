@@ -6,6 +6,8 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 )
 
+const defaultWSURL = "ws://127.0.0.1:8080/ws"
+
 type Model struct {
 	CpuMetric     collector.CpuMetric
 	RamMetric     collector.RamMetric
@@ -17,71 +19,24 @@ type Model struct {
 	height        int
 	processOffset int
 
-	cpuChannel     chan collector.CpuMetric
-	ramChannel     chan collector.RamMetric
-	diskChannel    chan collector.DiskMetric
-	networkChannel chan collector.NetworkMetric
-	processChannel chan []*collector.ProcessMetric
+	wsURL string
+	wsCh  chan tea.Msg
 }
 
 func InitialModel() Model {
-	cpuChannel := make(chan collector.CpuMetric)
-	ramChannel := make(chan collector.RamMetric)
-	diskChannel := make(chan collector.DiskMetric)
-	networkChannel := make(chan collector.NetworkMetric)
-	processChannel := make(chan []*collector.ProcessMetric)
+	return InitialModelWithURL(defaultWSURL)
+}
 
+func InitialModelWithURL(url string) Model {
 	return Model{
-		cpuChannel:     cpuChannel,
-		ramChannel:     ramChannel,
-		diskChannel:    diskChannel,
-		networkChannel: networkChannel,
-		processChannel: processChannel,
+		wsURL: url,
+		wsCh:  make(chan tea.Msg, 64),
 	}
 }
 
 func (m Model) Init() tea.Cmd {
-	go collector.WorkerCpu(m.cpuChannel)
-	go collector.WorkerRam(m.ramChannel)
-	go collector.WorkerDisk(m.diskChannel)
-	go collector.WorkerNetwork(m.networkChannel)
-	go collector.ProcessWorker(m.processChannel)
-
 	return tea.Batch(
-		waitForCpuMetric(m.cpuChannel),
-		waitForDiskMetric(m.diskChannel),
-		waitForRamMetric(m.ramChannel),
-		waitForNetworkMetric(m.networkChannel),
-		waitForProcessMetric(m.processChannel),
+		listenWS(m.wsURL, m.wsCh),
+		waitForWS(m.wsCh),
 	)
-}
-
-func waitForRamMetric(ch chan collector.RamMetric) tea.Cmd {
-	return func() tea.Msg {
-		return <-ch
-	}
-}
-
-func waitForNetworkMetric(ch chan collector.NetworkMetric) tea.Cmd {
-	return func() tea.Msg {
-		return <-ch
-	}
-}
-
-func waitForDiskMetric(ch chan collector.DiskMetric) tea.Cmd {
-	return func() tea.Msg {
-		return <-ch
-	}
-}
-
-func waitForCpuMetric(ch chan collector.CpuMetric) tea.Cmd {
-	return func() tea.Msg {
-		return <-ch
-	}
-}
-
-func waitForProcessMetric(ch chan []*collector.ProcessMetric) tea.Cmd {
-	return func() tea.Msg {
-		return <-ch
-	}
 }

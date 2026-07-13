@@ -12,6 +12,10 @@ const (
 	maxProcessLimit     = 200
 )
 
+func MaxProcessLimit() int {
+	return maxProcessLimit
+}
+
 type ProcessRow struct {
 	PID    int     `json:"pid"`
 	PPID   int     `json:"ppid"`
