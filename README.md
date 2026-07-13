@@ -19,7 +19,7 @@ A small system monitor with a client/server setup. The server collects OS metric
 ## Setup
 
 ```bash
-git clone <repo-url>
+git clone https://github.com/arxi-xyz/minitor
 cd minitor
 go mod download
 ```
@@ -144,7 +144,7 @@ CI runs on push/PR to `main`: lint, build, and test.
 
 ## Releases
 
-Pre-built Linux binaries (`amd64` + `arm64`) are published on [GitHub Releases](https://github.com/YOUR_USER/minitor/releases).
+Pre-built Linux binaries (`amd64` + `arm64`) are published on [GitHub Releases](https://github.com/arxi-xyz/minitor/releases).
 
 Each archive includes:
 - `minitor` — server
